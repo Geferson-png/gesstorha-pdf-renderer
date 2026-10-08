@@ -51,8 +51,6 @@ const fs = require('fs');
         return { ok: false, diagnostic };
       }
 
-      return { ok: true };
-      }
       document.documentElement.style.background = '#fff';
       document.body.style.margin = '0';
       document.body.style.padding = '0';
@@ -82,6 +80,7 @@ const fs = require('fs');
         html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
       `;
       document.head.appendChild(style);
+      return { ok: true };
     });
 
     if (!diagnostico.ok) {
