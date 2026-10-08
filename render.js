@@ -95,6 +95,13 @@ const fs = require('fs');
       throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
     }
 
+    const innerHtml = await certFrame.content();
+    await page.setContent(innerHtml, { waitUntil: 'networkidle' });
+    await page.emulateMedia({ media: 'screen' });
+    await page.evaluate(async () => {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    });
+
     await page.pdf({
       path: output,
       format: 'A4',
