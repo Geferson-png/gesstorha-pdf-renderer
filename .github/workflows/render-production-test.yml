@@ -1,0 +1,49 @@
+name: Testar retorno privado do PDF (DADOS FICTICIOS)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-and-deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CERTIFICATE_ID: a1b2c3d4
+      OUTPUT_FILE: certificado.pdf
+      GESSTORHA_APPS_SCRIPT_URL: ${{ secrets.GESSTORHA_APPS_SCRIPT_URL }}
+      GESSTORHA_PDF_CALLBACK_SECRET: ${{ secrets.GESSTORHA_PDF_CALLBACK_SECRET }}
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Renderizar Visual V3
+        run: npm run render:production
+
+      - name: Validar PDF local
+        shell: bash
+        run: |
+          test -s "$OUTPUT_FILE"
+          test "$(head -c 5 "$OUTPUT_FILE")" = "%PDF-"
+
+      - name: Entregar ao Apps Script privado
+        run: node deliver-production.js
+
+      - name: Remover PDF temporario
+        if: always()
+        shell: bash
+        run: rm -f "$OUTPUT_FILE"
