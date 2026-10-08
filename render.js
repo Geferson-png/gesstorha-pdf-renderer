@@ -16,8 +16,50 @@ const fs = require('fs');
 
     await page.goto(sourceUrl, { waitUntil: 'networkidle', timeout: 120000 });
     await page.emulateMedia({ media: 'screen' });
+
     await page.evaluate(async () => {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+      const mm = v => String(v) + 'mm';
+      const candidates = [...document.body.children].filter(el => {
+        const r = el.getBoundingClientRect();
+        return r.width > 700 && r.height > 350;
+      });
+
+      if (candidates.length < 2) {
+        throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
+      }
+
+      const sheets = candidates.slice(0, 2);
+      document.documentElement.style.background = '#fff';
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+
+      sheets.forEach((el, i) => {
+        el.style.width = mm(297);
+        el.style.height = mm(210);
+        el.style.minHeight = mm(210);
+        el.style.maxHeight = mm(210);
+        el.style.margin = '0';
+        el.style.boxSizing = 'border-box';
+        el.style.overflow = 'hidden';
+        el.style.breakInside = 'avoid';
+        el.style.pageBreakInside = 'avoid';
+        if (i === 0) {
+          el.style.breakAfter = 'page';
+          el.style.pageBreakAfter = 'always';
+        } else {
+          el.style.breakAfter = 'auto';
+          el.style.pageBreakAfter = 'auto';
+        }
+      });
+
+      const style = document.createElement('style');
+      style.textContent = `
+        @page { size: A4 landscape; margin: 0; }
+        html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+      `;
+      document.head.appendChild(style);
     });
 
     await page.pdf({
