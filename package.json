@@ -4,7 +4,8 @@
   "private": true,
   "description": "Renderizador PDF isolado para certificados Gesstorha",
   "scripts": {
-    "render": "node render.js"
+    "render": "node render.js",
+    "render:production": "node render-production.js"
   },
   "dependencies": {
     "playwright": "1.55.0"
