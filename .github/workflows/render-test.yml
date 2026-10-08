@@ -1,10 +1,10 @@
-name: Testar PDF Visual V3
+name: Testar PDF Visual V3 (SEM DADOS REAIS)
 
 on:
   workflow_dispatch:
     inputs:
       certificate_url:
-        description: URL completa do certificado Visual V3
+        description: URL de certificado de TESTE sem dados pessoais
         required: true
         type: string
 
@@ -36,7 +36,7 @@ jobs:
           OUTPUT_FILE: certificado-visual-v3.pdf
         run: npm run render
 
-      - name: Publicar PDF de teste
+      - name: Publicar PDF de teste (somente dados fictícios)
         uses: actions/upload-artifact@v4
         with:
           name: certificado-visual-v3
