@@ -4,7 +4,7 @@ const fs = require('fs');
 (async () => {
   const baseUrl = process.env.GESSTORHA_APPS_SCRIPT_URL;
   const id = process.env.CERTIFICATE_ID;
-  const output = process.env.OUTPUT_FILE || 'certificado.pdf';
+  const output = process.env.OUTPUT_PDF || process.env.OUTPUT_FILE || 'certificado.pdf';
 
   if (!baseUrl || !id) throw new Error('Configuracao de producao incompleta.');
 
@@ -19,6 +19,9 @@ const fs = require('fs');
 
     await page.goto(sourceUrl, { waitUntil: 'networkidle', timeout: 120000 });
     await page.emulateMedia({ media: 'screen' });
+
+    // Mantém o mesmo viewport do Visual V3 aprovado. Não converte o layout
+    // para milímetros antes da captura; isso alterava escala/tipografia.
 
     const frames = page.frames();
     const certFrame = frames[frames.length - 1];
@@ -47,11 +50,16 @@ const fs = require('fs');
       document.body.style.margin = '0';
       document.body.style.padding = '0';
 
+      // Congela as duas folhas exatamente no tamanho em pixels em que o
+      // Visual V3 foi desenhado/aprovado no navegador (1600 x 1131).
+      // O Chromium apenas encaixa essa folha no A4 horizontal.
       sheets.forEach((el, i) => {
-        el.style.width = '297mm';
-        el.style.height = '210mm';
-        el.style.minHeight = '210mm';
-        el.style.maxHeight = '210mm';
+        el.style.width = '1600px';
+        el.style.height = '1131px';
+        el.style.minWidth = '1600px';
+        el.style.maxWidth = '1600px';
+        el.style.minHeight = '1131px';
+        el.style.maxHeight = '1131px';
         el.style.margin = '0';
         el.style.boxSizing = 'border-box';
         el.style.overflow = 'hidden';
@@ -62,7 +70,9 @@ const fs = require('fs');
       });
 
       const style = document.createElement('style');
-      style.textContent = '@page { size: A4 landscape; margin: 0; } html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }';
+      style.textContent =
+        '@page { size: A4 landscape; margin: 0; } ' +
+        'html, body { width: 1600px !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }';
       document.head.appendChild(style);
       return { ok: true };
     });
@@ -81,7 +91,8 @@ const fs = require('fs');
       format: 'A4',
       landscape: true,
       printBackground: true,
-      preferCSSPageSize: true,
+      preferCSSPageSize: false,
+      scale: 0.7015,
       margin: { top: '0', right: '0', bottom: '0', left: '0' }
     });
 
