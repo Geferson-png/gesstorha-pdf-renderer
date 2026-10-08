@@ -1,0 +1,55 @@
+name: Renderizar certificado em produção
+
+on:
+  workflow_dispatch:
+    inputs:
+      certificate_id:
+        description: ID técnico do certificado
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  render-and-deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      GESSTORHA_APPS_SCRIPT_URL: ${{ secrets.GESSTORHA_APPS_SCRIPT_URL }}
+      GESSTORHA_PDF_CALLBACK_SECRET: ${{ secrets.GESSTORHA_PDF_CALLBACK_SECRET }}
+      CERTIFICATE_ID: ${{ inputs.certificate_id }}
+      OUTPUT_PDF: certificado.pdf
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Renderizar Visual V3
+        run: npm run render:production
+
+      - name: Validar PDF local
+        shell: bash
+        run: |
+          test -s "$OUTPUT_PDF"
+          test "$(head -c 5 "$OUTPUT_PDF")" = "%PDF-"
+
+      - name: Entregar ao Apps Script privado
+        run: node deliver-production.js
+
+      - name: Remover PDF temporário
+        if: always()
+        shell: bash
+        run: rm -f "$OUTPUT_PDF"
