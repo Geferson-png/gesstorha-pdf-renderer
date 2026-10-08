@@ -40,7 +40,11 @@ const fs = require('fs');
   }
 
   if (!response.ok || !result.sucesso) {
-    throw new Error('O receptor privado recusou o PDF.');
+    const motivo = String(result.erro || result.error || result.mensagem || result.message || 'motivo nao informado')
+      .replace(/GESSTORHA_PDF_CALLBACK_SECRET/gi, '[SECRET]')
+      .replace(/callbackSecret/gi, '[SECRET]')
+      .slice(0, 300);
+    throw new Error('O receptor privado recusou o PDF: ' + motivo);
   }
 
   console.log('PDF entregue com sucesso ao ambiente privado.');
