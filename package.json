@@ -1,0 +1,12 @@
+{
+  "name": "gesstorha-pdf-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Renderizador PDF isolado para certificados Gesstorha",
+  "scripts": {
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "playwright": "1.55.0"
+  }
+}
