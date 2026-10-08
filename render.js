@@ -21,16 +21,23 @@ const fs = require('fs');
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
       const mm = v => String(v) + 'mm';
-      const candidates = [...document.body.children].filter(el => {
-        const r = el.getBoundingClientRect();
-        return r.width > 700 && r.height > 350;
-      });
+      const all = [...document.querySelectorAll('body *')];
+      const candidates = all
+        .map(el => ({ el, r: el.getBoundingClientRect() }))
+        .filter(x => x.r.width > 700 && x.r.height > 350)
+        .sort((a, b) => a.r.top - b.r.top || b.r.width * b.r.height - a.r.width * a.r.height);
 
-      if (candidates.length < 2) {
-        throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
+      const sheets = [];
+      for (const item of candidates) {
+        if (!sheets.some(el => el.contains(item.el) || item.el.contains(el))) {
+          sheets.push(item.el);
+        }
+        if (sheets.length === 2) break;
       }
 
-      const sheets = candidates.slice(0, 2);
+      if (sheets.length < 2) {
+        throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
+      }
       document.documentElement.style.background = '#fff';
       document.body.style.margin = '0';
       document.body.style.padding = '0';
