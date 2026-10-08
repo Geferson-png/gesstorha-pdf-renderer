@@ -36,6 +36,19 @@ const fs = require('fs');
       }
 
       if (sheets.length < 2) {
+        const diagnostic = all.map(el => {
+          const r = el.getBoundingClientRect();
+          return {
+            tag: el.tagName,
+            id: el.id || '',
+            className: typeof el.className === 'string' ? el.className : '',
+            width: Math.round(r.width),
+            height: Math.round(r.height),
+            top: Math.round(r.top),
+            text: (el.innerText || '').replace(/\\s+/g, ' ').slice(0, 120)
+          };
+        }).filter(x => x.width > 200 && x.height > 100);
+        console.log('DOM_DIAGNOSTICO=' + JSON.stringify(diagnostic));
         throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
       }
       document.documentElement.style.background = '#fff';
