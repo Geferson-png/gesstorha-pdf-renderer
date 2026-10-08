@@ -18,8 +18,11 @@ const fs = require('fs');
     await page.emulateMedia({ media: 'screen' });
 
     const frames = page.frames();
-    const certFrame = frames.find(f => f !== page.mainFrame() && f.url() && !f.url().startsWith('about:blank'));
-    if (!certFrame) throw new Error('Iframe do certificado não encontrado.');
+    const certFrame = frames[frames.length - 1];
+    if (!certFrame || certFrame === page.mainFrame()) {
+      throw new Error('Iframe interno do certificado não encontrado.');
+    }
+    console.log('FRAMES=' + JSON.stringify(frames.map(f => ({ name: f.name(), url: f.url() }))));
 
     const diagnostico = await certFrame.evaluate(async () => {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
