@@ -50,16 +50,10 @@ const fs = require('fs');
       document.body.style.margin = '0';
       document.body.style.padding = '0';
 
-      // Congela as duas folhas exatamente no tamanho em pixels em que o
-      // Visual V3 foi desenhado/aprovado no navegador (1600 x 1131).
-      // O Chromium apenas encaixa essa folha no A4 horizontal.
+      // Mantém a geometria CSS original do Visual V3.
+      // Não força 1600x1131 nem 297x210 sobre os blocos: o HTML aprovado
+      // já contém o enquadramento correto das duas folhas.
       sheets.forEach((el, i) => {
-        el.style.width = '1600px';
-        el.style.height = '1131px';
-        el.style.minWidth = '1600px';
-        el.style.maxWidth = '1600px';
-        el.style.minHeight = '1131px';
-        el.style.maxHeight = '1131px';
         el.style.margin = '0';
         el.style.boxSizing = 'border-box';
         el.style.overflow = 'hidden';
@@ -72,7 +66,7 @@ const fs = require('fs');
       const style = document.createElement('style');
       style.textContent =
         '@page { size: A4 landscape; margin: 0; } ' +
-        'html, body { width: 1600px !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }';
+        'html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }';
       document.head.appendChild(style);
       return { ok: true };
     });
@@ -91,8 +85,7 @@ const fs = require('fs');
       format: 'A4',
       landscape: true,
       printBackground: true,
-      preferCSSPageSize: false,
-      scale: 0.7015,
+      preferCSSPageSize: true,
       margin: { top: '0', right: '0', bottom: '0', left: '0' }
     });
 
