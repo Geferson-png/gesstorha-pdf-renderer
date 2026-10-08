@@ -17,7 +17,7 @@ const fs = require('fs');
     await page.goto(sourceUrl, { waitUntil: 'networkidle', timeout: 120000 });
     await page.emulateMedia({ media: 'screen' });
 
-    await page.evaluate(async () => {
+    const diagnostico = await page.evaluate(async () => {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
       const mm = v => String(v) + 'mm';
@@ -48,8 +48,10 @@ const fs = require('fs');
             text: (el.innerText || '').replace(/\\s+/g, ' ').slice(0, 120)
           };
         }).filter(x => x.width > 200 && x.height > 100);
-        console.log('DOM_DIAGNOSTICO=' + JSON.stringify(diagnostic));
-        throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
+        return { ok: false, diagnostic };
+      }
+
+      return { ok: true };
       }
       document.documentElement.style.background = '#fff';
       document.body.style.margin = '0';
@@ -81,6 +83,11 @@ const fs = require('fs');
       `;
       document.head.appendChild(style);
     });
+
+    if (!diagnostico.ok) {
+      console.log('DOM_DIAGNOSTICO=' + JSON.stringify(diagnostico.diagnostic));
+      throw new Error('Não foram encontrados os dois blocos visuais do certificado.');
+    }
 
     await page.pdf({
       path: output,
