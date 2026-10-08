@@ -17,7 +17,11 @@ const fs = require('fs');
     await page.goto(sourceUrl, { waitUntil: 'networkidle', timeout: 120000 });
     await page.emulateMedia({ media: 'screen' });
 
-    const diagnostico = await page.evaluate(async () => {
+    const frames = page.frames();
+    const certFrame = frames.find(f => f !== page.mainFrame() && f.url() && !f.url().startsWith('about:blank'));
+    if (!certFrame) throw new Error('Iframe do certificado não encontrado.');
+
+    const diagnostico = await certFrame.evaluate(async () => {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
       const mm = v => String(v) + 'mm';
