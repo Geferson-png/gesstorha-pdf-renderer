@@ -1,0 +1,45 @@
+name: Testar PDF Visual V3
+
+on:
+  workflow_dispatch:
+    inputs:
+      certificate_url:
+        description: URL completa do certificado Visual V3
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Renderizar certificado
+        env:
+          CERTIFICATE_URL: ${{ inputs.certificate_url }}
+          OUTPUT_FILE: certificado-visual-v3.pdf
+        run: npm run render
+
+      - name: Publicar PDF de teste
+        uses: actions/upload-artifact@v4
+        with:
+          name: certificado-visual-v3
+          path: certificado-visual-v3.pdf
+          if-no-files-found: error
+          retention-days: 1
