@@ -1,4 +1,4 @@
-# CLAUDE.md
+# .CLAUDE.md
 
 Guia para o Claude Code trabalhar neste repositório. Leia antes de qualquer mudança.
 
